@@ -27,6 +27,7 @@
             container       : window,
             data_attribute  : "original",
             skip_invisible  : true,
+            check_horizontal: true,
             appear          : null,
             load            : null,
             error           : null,
@@ -41,6 +42,23 @@
                 if (settings.skip_invisible && !$this.is(":visible")) {
                     return;
                 }
+
+                if (!settings.check_horizontal) {
+                    if ($.abovethetop(this, settings)) {
+                        /* Nothing. */
+                    } else if (!$.belowthefold(this, settings)) {
+                        $this.trigger("appear");
+                        /* if we found an image we'll load, reset the counter */
+                        counter = 0;
+                    } else {
+                        if (++counter > settings.failure_limit) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
                 if ($.abovethetop(this, settings) ||
                     $.leftofbegin(this, settings)) {
                         /* Nothing. */
@@ -225,6 +243,10 @@
     };
 
     $.inviewport = function(element, settings) {
+        if (settings.check_horizontal) {
+            return !$.belowthefold(element, settings) && !$.abovethetop(element, settings);
+        }
+
          return !$.rightoffold(element, settings) && !$.leftofbegin(element, settings) &&
                 !$.belowthefold(element, settings) && !$.abovethetop(element, settings);
      };
